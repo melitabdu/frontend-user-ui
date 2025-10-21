@@ -1,0 +1,92 @@
+/* src/pages/MyBookings.css */
+
+.my-bookings-container {
+  padding: 1rem;
+  max-width: 1000px;
+  margin: auto;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.heading {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.error-message,
+.no-bookings {
+  color: darkred;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.bookings-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.booking-card {
+  background-color: #f8f8f8;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.booking-card h3 {
+  margin-top: 0;
+}
+
+.booking-info {
+  margin-top: 0.5rem;
+}
+
+.success-message {
+  color: green;
+  font-weight: bold;
+}
+
+.pending-message {
+  color: darkorange;
+  font-weight: bold;
+}
+
+.copy-btn {
+  margin-top: 0.5rem;
+  padding: 6px 12px;
+  border: none;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.copy-btn:hover {
+  background-color: #ccc;
+}
+
+.logout-btn {
+  margin-top: 2rem;
+  display: block;
+  background-color: #d9534f;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.logout-btn:hover {
+  background-color: #c9302c;
+}
+
+/* Responsive */
+@media (min-width: 600px) {
+  .bookings-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

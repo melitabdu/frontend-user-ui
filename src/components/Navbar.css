@@ -1,0 +1,211 @@
+:root{
+  --logo-size-desktop: 80px;
+  --logo-size-mobile: 56px;
+}
+
+/* Navbar */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1.25rem;
+  background: linear-gradient(135deg,#008080 0%,#0077b6 100%);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 2000; /* high so dropdown shows above content */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  overflow: visible; /* important so absolute dropdown isn't clipped */
+}
+
+/* Logo */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+.logo {
+  width: var(--logo-size-desktop);
+  height: var(--logo-size-desktop);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.9);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+.brand-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Nav links (center/right) */
+.nav-links{
+  display:flex;
+  gap:1rem;
+  align-items:center;
+  list-style:none;
+  margin:0;
+  padding:0;
+  justify-content:center;
+}
+
+/* general link/button style */
+.nav-links a, .nav-links button {
+  color: #fff;
+  background: none;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+.nav-links a:hover, .nav-links button:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+/* Dropdown base */
+.dropdown{
+  position: relative; /* anchor for absolute dropdown */
+  z-index: 2500;
+}
+.dropbtn{
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Visible dropdown (desktop) */
+.dropdown-content{
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  display: none;
+  min-width: 220px;
+  background: #ffffff;
+  color: #222;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  overflow: hidden;
+  padding: 6px 0;
+  transform-origin: top left;
+  animation: none;
+}
+
+/* show on hover or when .open is present */
+.dropdown:hover .dropdown-content,
+.dropdown.open .dropdown-content {
+  display: block;
+  animation: slideFadeDown 180ms ease;
+}
+
+/* dropdown links */
+.dropdown-content a {
+  display:block;
+  padding: 10px 14px;
+  color: #222;
+  text-decoration:none;
+  font-weight:500;
+}
+.dropdown-content a:hover{
+  background:#008080;
+  color:#fff;
+}
+
+/* Auth buttons */
+.login-btn {
+  background: #fff;
+  color: #008080;
+  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 18px;
+  cursor: pointer;
+}
+.logout-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.welcome-msg{
+  display:flex;
+  gap:0.6rem;
+  align-items:center;
+  color:#fff;
+}
+
+/* hamburger (right) */
+.hamburger{
+  display:none;
+  background:none;
+  border:none;
+  color:#fff;
+  cursor:pointer;
+  padding:6px;
+  border-radius:8px;
+}
+
+/* Mobile */
+@media (max-width: 768px){
+  :root { --logo-size-desktop: var(--logo-size-desktop); --logo-size-mobile: 86px; }
+  .logo { width: var(--logo-size-mobile); height: var(--logo-size-mobile); }
+  .brand-name { display:none; } /* hide brand text on small screens to save space */
+
+  .hamburger { display:inline-flex; }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    background: linear-gradient(180deg,#008080,#0077b6);
+    padding: 12px 10px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  }
+
+  .nav-links.open { display:flex; }
+
+  /* On mobile keep dropdown content in-flow (static) inside menu */
+  .dropdown-content {
+    position: static;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+  }
+  .dropdown-content a {
+    padding: 12px 10px;
+    color: #fff;
+  }
+  .dropdown.open .dropdown-content { display:block; }
+
+  .nav-links a, .nav-links button {
+    width:100%;
+    text-align:left;
+    padding:10px;
+    color:#fff;
+  }
+
+  .login-btn, .logout-btn {
+    width:100%;
+    text-align:center;
+    padding:10px;
+    margin-top:6px;
+  }
+}
+
+/* small animation for dropdown */
+@keyframes slideFadeDown {
+  from { opacity: 0; transform: translateY(-6px) scaleY(0.98); }
+  to   { opacity: 1; transform: translateY(0) scaleY(1); }
+}

@@ -1,0 +1,76 @@
+.book-provider-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.booking-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.booking-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #333;
+}
+
+.provider-name {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.booking-input {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+.booking-button {
+  width: 100%;
+  padding: 0.7rem;
+  margin-top: 1rem;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.booking-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.booking-message {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #2563eb;
+}
+
+@media (max-width: 600px) {
+  .booking-card {
+    padding: 1rem;
+  }
+
+  .booking-title {
+    font-size: 1.2rem;
+  }
+}

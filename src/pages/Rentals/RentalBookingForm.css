@@ -1,0 +1,133 @@
+.booking-form-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.booking-form-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Message styling */
+.form-message {
+  text-align: center;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+.form-message:contains("✅") {
+  background: #e6ffed;
+  color: #2d7a46;
+}
+.form-message:contains("❌"),
+.form-message:contains("⚠️") {
+  background: #ffe6e6;
+  color: #b22222;
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.booking-form label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.booking-form input,
+.booking-form textarea,
+.booking-form .react-datepicker-wrapper input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.booking-form textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.booking-form input[type="file"] {
+  padding: 5px;
+}
+
+/* Preview image styling */
+.id-preview {
+  margin-top: 10px;
+}
+.id-preview img {
+  max-width: 200px;
+  height: auto;
+  border-radius: 8px;
+  margin-top: 5px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.booking-form button {
+  background-color: #1e90ff;
+  color: #fff;
+  font-weight: 600;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.booking-form button:hover {
+  background-color: #1c86ee;
+}
+
+.booking-form button:disabled {
+  background-color: #87cefa;
+  cursor: not-allowed;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .booking-form-container {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .booking-form input,
+  .booking-form textarea,
+  .booking-form .react-datepicker-wrapper input {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .booking-form button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .id-preview img {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-form-container {
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .booking-form {
+    gap: 10px;
+  }
+}
