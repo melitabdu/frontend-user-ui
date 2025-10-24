@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import './LoginModal.css';
-import { loginUser, registerUser } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
 const LoginModal = ({ onClose }) => {
+  const { loginUser, registerUser } = useAuth();
   const [form, setForm] = useState({ name: '', phone: '', password: '' });
   const [isNew, setIsNew] = useState(true);
   const [loading, setLoading] = useState(false);
 
+  // ✅ Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Only allow numbers for phone & max length 10
     if (name === 'phone' && (!/^[0-9]*$/.test(value) || value.length > 10)) return;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ✅ Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -26,22 +30,18 @@ const LoginModal = ({ onClose }) => {
       return;
     }
 
-    if (isNew && !form.name.trim()) {
-      alert('እባኮት ስም ያስገቡ');
-      return;
-    }
-
     try {
       setLoading(true);
 
       const userData = isNew
         ? await registerUser(form)
-        : await loginUser({ phone: form.phone, password: form.password });
+        : await loginUser(form);
 
-      if (userData.token) localStorage.setItem('token', userData.token);
-
+      console.log('✅ User logged in:', userData);
       alert(`እንኳን ደህና መጡ ${userData.name || ''}`);
-      onClose();
+
+      onClose(); // Close the modal
+
     } catch (err) {
       alert(err.message || 'አልተሳካም።');
     } finally {
@@ -59,8 +59,8 @@ const LoginModal = ({ onClose }) => {
             <>
               <label>ስም:</label>
               <input
-                name="name"
                 type="text"
+                name="name"
                 value={form.name}
                 placeholder="ስም ያስገቡ"
                 onChange={handleChange}
@@ -70,20 +70,20 @@ const LoginModal = ({ onClose }) => {
           )}
           <label>ስልክ ቁጥር:</label>
           <input
-            name="phone"
             type="tel"
-            maxLength="10"
-            placeholder="09xxxxxxxx"
+            name="phone"
             value={form.phone}
+            placeholder="09xxxxxxxx"
             onChange={handleChange}
+            maxLength={10}
             required
           />
           <label>የይለፍ ቃል:</label>
           <input
-            name="password"
             type="password"
-            placeholder="******"
+            name="password"
             value={form.password}
+            placeholder="******"
             onChange={handleChange}
             required
           />
@@ -91,10 +91,9 @@ const LoginModal = ({ onClose }) => {
             {loading ? 'እባክዎን ይጠብቁ...' : isNew ? 'ይመዝገቡ' : 'ግባ'}
           </button>
         </form>
-        <p style={{ marginTop: '1rem', textAlign: 'center' }}>
+        <p style={{ marginTop: '1rem' }}>
           {isNew ? 'አስቀድሞ ተመዝግበዋል?' : 'አዲስ ነኝ?'}{' '}
           <button
-            type="button"
             style={{
               border: 'none',
               background: 'none',
