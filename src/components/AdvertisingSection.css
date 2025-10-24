@@ -1,52 +1,67 @@
-.advertising-section {
-  padding: 2rem 1rem;
-  background-color: #f9f9f9;
-  text-align: center;
+.booking-form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .section-title {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
+  text-align: center;
   margin-bottom: 1.5rem;
-  color: #222;
 }
 
-.video-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.5rem;
-  justify-content: center;
+.form-group {
   margin-bottom: 1rem;
 }
 
-.video-card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 1rem;
-  transition: transform 0.2s ease-in-out;
+.form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 600;
 }
 
-.video-card:hover {
-  transform: translateY(-5px);
-}
-
-.video-card iframe {
+.form-group input,
+.form-group textarea {
   width: 100%;
-  height: 200px;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.preview-container {
+  margin-top: 0.6rem;
+  text-align: center;
+}
+
+.preview-image {
+  width: 180px;
   border-radius: 8px;
 }
 
-.load-more-btn {
-  background-color: #007bff;
-  border: none;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+.form-message {
+  text-align: center;
+  padding: 0.5rem;
   border-radius: 6px;
-  cursor: pointer;
+  margin-bottom: 1rem;
+  background-color: #f6f6f6;
 }
 
-.load-more-btn:disabled {
-  background-color: #555;
-  cursor: not-allowed;
+.submit-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: #007bff;
+  color: #fff;
+  font-size: 1rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.submit-btn:hover {
+  background: #0056b3;
 }

@@ -1,4 +1,3 @@
-// src/pages/Rentals/RentalBookingForm.jsx
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -8,8 +7,9 @@ import { useAuth } from "../../context/AuthContext";
 import "./RentalBookingForm.css";
 
 const RentalBookingForm = () => {
-  const { id } = useParams(); // propertyId from URL
-  const propertyId = id;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  const { id } = useParams();
   const navigate = useNavigate();
   const { token, user } = useAuth();
 
@@ -24,36 +24,31 @@ const RentalBookingForm = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // ፋይል መምረጥ
+  // ✅ Handle ID file input
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setIdCard(file);
-
-    if (!file) {
-      setIdPreview(null);
-      return;
-    }
+    if (!file) return setIdPreview(null);
 
     if (file.type.startsWith("image")) {
+      setIdCard(file);
       setIdPreview(URL.createObjectURL(file));
     } else {
-      setIdPreview(null);
-      setIdCard(null);
       alert("❌ እባክዎ የምስል ፋይል (jpg, jpeg, png) ብቻ ይምረጡ!");
+      setIdCard(null);
+      setIdPreview(null);
     }
   };
 
+  // ✅ Submit booking form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!token) {
-      setMessage("⛔ እባክዎ መጀመሪያ ይግቡ።");
-      return;
+      return setMessage("⛔ እባክዎ መጀመሪያ ይግቡ።");
     }
 
     if (!fullName || !phone || !email || !startDate || !endDate) {
-      setMessage("⚠️ እባክዎ ሁሉንም መስኮች ይሙሉ።");
-      return;
+      return setMessage("⚠️ እባክዎ ሁሉንም መስኮች ይሙሉ።");
     }
 
     setLoading(true);
@@ -61,39 +56,39 @@ const RentalBookingForm = () => {
 
     try {
       const formData = new FormData();
-      formData.append("propertyId", propertyId);
+      formData.append("propertyId", id);
       formData.append("fullName", fullName);
       formData.append("phone", phone);
       formData.append("email", email);
       formData.append("startDate", startDate.toISOString());
       formData.append("endDate", endDate.toISOString());
       formData.append("notes", notes);
+      if (idCard) formData.append("idCard", idCard);
 
-      if (idCard) {
-        formData.append("idCard", idCard);
-      }
-
-      await axios.post("http://localhost:5000/api/rental-bookings", formData, {
+      const res = await axios.post(`${API_BASE_URL}/api/rental-bookings`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
 
+      console.log("✅ Booking success:", res.data);
       setMessage("✅ ቦኪንግ በተሳካ ሁኔታ ተሰጥቷል! እባክዎ ይጠበቁ...");
-      
-      setTimeout(() => {
-        navigate("/my-rental-bookings");
-      }, 2000);
 
-      // ቅጽ መስተካከያ
+      // Redirect after 2 seconds
+      setTimeout(() => navigate("/my-rental-bookings"), 2000);
+
+      // Reset form
+      setFullName(user?.name || "");
+      setPhone(user?.phone || "");
+      setEmail(user?.email || "");
       setStartDate(null);
       setEndDate(null);
       setNotes("");
       setIdCard(null);
       setIdPreview(null);
     } catch (err) {
-      console.error("Booking failed:", err.response?.data || err.message);
+      console.error("❌ Booking failed:", err.response?.data || err.message);
       setMessage(
         err.response?.data?.message || "❌ ቦኪንግ አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
       );
@@ -103,11 +98,13 @@ const RentalBookingForm = () => {
   };
 
   return (
-    <div className="booking-form-container">
-      <h2>የቤት ቦኪንግ ቅጽ</h2>
-      {message && <div className="form-message">{message}</div>}
+    <section className="booking-form-container">
+      <h2 className="section-title">የኪራይ ቦኪንግ ቅጽ</h2>
+
+      {message && <p className="form-message">{message}</p>}
+
       <form onSubmit={handleSubmit} className="booking-form">
-        <div>
+        <div className="form-group">
           <label>ሙሉ ስም</label>
           <input
             type="text"
@@ -116,7 +113,8 @@ const RentalBookingForm = () => {
             required
           />
         </div>
-        <div>
+
+        <div className="form-group">
           <label>ስልክ ቁጥር</label>
           <input
             type="tel"
@@ -125,7 +123,8 @@ const RentalBookingForm = () => {
             required
           />
         </div>
-        <div>
+
+        <div className="form-group">
           <label>ኢሜይል</label>
           <input
             type="email"
@@ -134,36 +133,38 @@ const RentalBookingForm = () => {
             required
           />
         </div>
-        <div>
+
+        <div className="form-group">
           <label>መነሻ ቀን</label>
           <DatePicker
             selected={startDate}
             onChange={(date) => setStartDate(date)}
             dateFormat="yyyy/MM/dd"
+            placeholderText="እባክዎ ቀን ይምረጡ"
           />
         </div>
-        <div>
+
+        <div className="form-group">
           <label>መጨረሻ ቀን</label>
           <DatePicker
             selected={endDate}
             onChange={(date) => setEndDate(date)}
             dateFormat="yyyy/MM/dd"
+            placeholderText="እባክዎ ቀን ይምረጡ"
           />
         </div>
-        <div>
-          <label>የመታወቂያ ፎቶ ማስገባት (አማራጭ)</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
+
+        <div className="form-group">
+          <label>የመታወቂያ ፎቶ (አማራጭ)</label>
+          <input type="file" accept="image/*" onChange={handleFileChange} />
           {idPreview && (
             <div className="preview-container">
-              <img src={idPreview} alt="ID Preview" />
+              <img src={idPreview} alt="ID Preview" className="preview-image" />
             </div>
           )}
         </div>
-        <div>
+
+        <div className="form-group">
           <label>ተጨማሪ ማስታወሻ (አማራጭ)</label>
           <textarea
             value={notes}
@@ -171,11 +172,12 @@ const RentalBookingForm = () => {
             placeholder="ማንኛውም ልዩ ጥያቄ..."
           />
         </div>
-        <button type="submit" disabled={loading}>
+
+        <button type="submit" className="submit-btn" disabled={loading}>
           {loading ? "በመላክ ላይ..." : "ቦኪንግ ላክ"}
         </button>
       </form>
-    </div>
+    </section>
   );
 };
 
