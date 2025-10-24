@@ -1,146 +1,106 @@
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+// src/pages/rentals/MyRentalBookings.jsx
+import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
-import "./RentalBookingForm.css";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import "./MyBookings.css";
 
-const RentalBookingForm = () => {
-  const { id } = useParams(); // property ID from URL
+const MyRentalBookings = () => {
+  const { token, logoutUser } = useAuth();
   const navigate = useNavigate();
-  const { token, user } = useAuth();
-
-  // ✅ Use environment variable for API base URL
-  const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-  });
-
-  // ✅ Form state
-  const [fullName, setFullName] = useState(user?.name || "");
-  const [phone, setPhone] = useState(user?.phone || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [idCard, setIdCard] = useState(null);
-  const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [bookings, setBookings] = useState([]);
   const [message, setMessage] = useState("");
+  const latestBookingRef = useRef(null);
 
-  // ✅ Handle file upload
-  const handleFileChange = (e) => {
-    setIdCard(e.target.files[0]);
-  };
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  // ✅ Submit booking
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!token) return setMessage("⛔ እባክዎ መጀመሪያ ይግቡ።");
-
-    if (!startDate || !endDate) {
-      return setMessage("⛔ እባክዎ የመጀመሪያና የመጨረሻ ቀን ይምረጡ።");
+  const fetchBookings = async () => {
+    if (!token) {
+      setMessage("⚠️ Please log in to view your bookings.");
+      return;
     }
-
-    setLoading(true);
-    setMessage("");
 
     try {
-      const formData = new FormData();
-      formData.append("propertyId", id);
-      formData.append("fullName", fullName);
-      formData.append("phone", phone);
-      formData.append("email", email);
-      formData.append("startDate", startDate.toISOString());
-      formData.append("endDate", endDate.toISOString());
-      formData.append("notes", notes);
-      if (idCard) formData.append("idCard", idCard);
-
-      const res = await api.post("/api/rental-bookings", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      console.log("✅ Booking success:", res.data);
-      setMessage("✅ ቦኪንግ በተሳካ ሁኔታ ተሰጥቷል!");
-      setTimeout(() => navigate("/my-rental-bookings"), 2000);
-    } catch (err) {
-      console.error("❌ Booking failed:", err.response?.data || err.message);
-      setMessage(
-        err.response?.data?.message ||
-          "❌ ቦኪንግ አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+      const res = await axios.get(
+        `${API_BASE_URL}/api/rental-bookings/my-bookings`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-    } finally {
-      setLoading(false);
+
+      const data = res.data?.data || res.data || [];
+      setBookings(Array.isArray(data) ? data : []);
+      setMessage("");
+    } catch (err) {
+      console.error("❌ Fetch error:", err.response?.data || err.message);
+      setMessage("❌ Could not fetch rental bookings.");
+      setBookings([]);
     }
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, [token]);
+
+  useEffect(() => {
+    if (latestBookingRef.current) {
+      latestBookingRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [bookings]);
+
+  // ✅ Status messages in Amharic
+  const getStatusMessage = (booking) => {
+    if (booking.status === "pending") return "በመጠባበቅ ላይ።";
+    if (booking.status === "owner_confirm") return "ባለቤት አረጋገጠዋል። እባኮትን ክፍያ  በንግድ ባንክ 1000525434587 ወይም በቴሌ ቢር 0984735563 200 ብር ያድርጉ።";
+    if (booking.status === "awaiting_payment") return "ጥያቄዎ ተሳክቷል። እባኮትን ክፍያ  በንግድ ባንክ 1000525434587 ወይም በቴሌ ቢር 0984735563 200 ብር ያድርጉ።";
+    if (booking.status === "processing") return "ክፍያዎ ተቀባይነት አግኝቷል። ባለቤቱ ይደውሉሎታል።";
+    if (booking.status === "completed") return "ክፍያ ተሰጥቷል። አገልግሎቱ ተጠናቆል።";
+    if (booking.status === "cancelled") return "ቦታዎ ተሰርዟል።";
+    return "";
   };
 
   return (
-    <div className="rental-booking-container">
-      <h2 className="rental-booking-title">🏠 የኪራይ ቦኪንግ ቅፅ</h2>
+    <div className="my-bookings-container">
+      <button onClick={() => navigate("/rentals")} className="back-btn">
+        ← Back to Rentals
+      </button>
 
-      <form onSubmit={handleSubmit} className="rental-booking-form">
-        <label>ሙሉ ስም</label>
-        <input
-          type="text"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          required
-        />
+      <h2>📖 የእኔ ኪራይ ጥያቄዎች</h2>
+      {message && <p className="error-message">{message}</p>}
 
-        <label>ስልክ ቁጥር</label>
-        <input
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          required
-        />
+      {bookings.length === 0 ? (
+        <p>ምንም ኪራይ ጥያቄ አልተገኘም።</p>
+      ) : (
+        <div className="bookings-grid">
+          {bookings.map((b, index) => (
+            <div
+              key={b._id}
+              className={`booking-card ${
+                index === bookings.length - 1 ? "latest-booking" : ""
+              }`}
+              ref={index === bookings.length - 1 ? latestBookingRef : null}
+            >
+              <h3>🏠 {b.propertyId?.title || "N/A"}</h3>
+              <p>
+                📅 {b.startDate ? new Date(b.startDate).toLocaleDateString() : "?"} -{" "}
+                {b.endDate ? new Date(b.endDate).toLocaleDateString() : "?"}
+              </p>
+              <p>📍 {b.propertyId?.location || "N/A"}</p>
+              <p>📌 Status: {b.status || "pending"}</p>
+              <p style={{ color: "green", fontWeight: "bold" }}>{getStatusMessage(b)}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
-        <label>ኢሜይል</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <label>መጀመሪያ ቀን</label>
-        <DatePicker
-          selected={startDate}
-          onChange={(date) => setStartDate(date)}
-          dateFormat="yyyy-MM-dd"
-          minDate={new Date()}
-          placeholderText="መጀመሪያ ቀን ይምረጡ"
-        />
-
-        <label>መጨረሻ ቀን</label>
-        <DatePicker
-          selected={endDate}
-          onChange={(date) => setEndDate(date)}
-          dateFormat="yyyy-MM-dd"
-          minDate={startDate || new Date()}
-          placeholderText="መጨረሻ ቀን ይምረጡ"
-        />
-
-        <label>የመታወቂያ ካርድ (አማራጭ)</label>
-        <input type="file" accept="image/*,.pdf" onChange={handleFileChange} />
-
-        <label>ተጨማሪ መረጃ</label>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="የቦኪንግ ተጨማሪ መረጃ..."
-        />
-
-        <button type="submit" disabled={loading}>
-          {loading ? "⏳ በመላክ ላይ..." : "📩 ቦኪንግ ይላኩ"}
+      {token && (
+        <button onClick={logoutUser} className="logout-btn">
+          🚪 Logout
         </button>
-      </form>
-
-      {message && <p className="rental-booking-message">{message}</p>}
+      )}
     </div>
   );
 };
 
-export default RentalBookingForm;
+export default MyRentalBookings;

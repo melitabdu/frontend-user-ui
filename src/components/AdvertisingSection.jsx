@@ -1,184 +1,124 @@
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { useAuth } from "../../context/AuthContext";
-import "./RentalBookingForm.css";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import './AdvertisingSection.css';
 
-const RentalBookingForm = () => {
+const AdvertisingSection = () => {
+  const [videos, setVideos] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { token, user } = useAuth();
+  // ✅ Fetch videos safely
+  const fetchVideos = async (pageNum = 1) => {
+    setLoading(true);
+    setMessage('');
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/advideos?page=${pageNum}`);
 
-  const [fullName, setFullName] = useState(user?.name || "");
-  const [phone, setPhone] = useState(user?.phone || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [idCard, setIdCard] = useState(null);
-  const [idPreview, setIdPreview] = useState(null);
-  const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+      // ✅ Flexible response parsing
+      const result = res.data;
+      const videoList =
+        result?.videos || result?.data?.videos || result?.data || [];
 
-  // ✅ Handle ID file input
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return setIdPreview(null);
+      if (!Array.isArray(videoList)) {
+        throw new Error('Unexpected API response format');
+      }
 
-    if (file.type.startsWith("image")) {
-      setIdCard(file);
-      setIdPreview(URL.createObjectURL(file));
-    } else {
-      alert("❌ እባክዎ የምስል ፋይል (jpg, jpeg, png) ብቻ ይምረጡ!");
-      setIdCard(null);
-      setIdPreview(null);
+      if (pageNum === 1) {
+        setVideos(videoList);
+      } else {
+        setVideos((prev) => [...prev, ...videoList]);
+      }
+
+      setTotalPages(result.totalPages || result.data?.totalPages || 1);
+      setPage(result.page || result.data?.page || pageNum);
+    } catch (err) {
+      console.error('❌ Failed to load videos:', err);
+      setMessage('❌ Failed to load videos. Please try again.');
     }
+    setLoading(false);
   };
 
-  // ✅ Submit booking form
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    fetchVideos();
+  }, []);
 
-    if (!token) {
-      return setMessage("⛔ እባክዎ መጀመሪያ ይግቡ።");
-    }
+  // ✅ Embed video logic
+  const renderEmbed = (video) => {
+    if (video.platform === 'youtube') {
+      let videoId = '';
 
-    if (!fullName || !phone || !email || !startDate || !endDate) {
-      return setMessage("⚠️ እባክዎ ሁሉንም መስኮች ይሙሉ።");
-    }
+      if (video.videoUrl.includes('v=')) {
+        videoId = video.videoUrl.split('v=')[1]?.split('&')[0];
+      } else if (video.videoUrl.includes('shorts/')) {
+        videoId = video.videoUrl.split('shorts/')[1]?.split('?')[0];
+      } else if (video.videoUrl.includes('youtu.be/')) {
+        videoId = video.videoUrl.split('youtu.be/')[1]?.split('?')[0];
+      }
 
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const formData = new FormData();
-      formData.append("propertyId", id);
-      formData.append("fullName", fullName);
-      formData.append("phone", phone);
-      formData.append("email", email);
-      formData.append("startDate", startDate.toISOString());
-      formData.append("endDate", endDate.toISOString());
-      formData.append("notes", notes);
-      if (idCard) formData.append("idCard", idCard);
-
-      const res = await axios.post(`${API_BASE_URL}/api/rental-bookings`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      console.log("✅ Booking success:", res.data);
-      setMessage("✅ ቦኪንግ በተሳካ ሁኔታ ተሰጥቷል! እባክዎ ይጠበቁ...");
-
-      // Redirect after 2 seconds
-      setTimeout(() => navigate("/my-rental-bookings"), 2000);
-
-      // Reset form
-      setFullName(user?.name || "");
-      setPhone(user?.phone || "");
-      setEmail(user?.email || "");
-      setStartDate(null);
-      setEndDate(null);
-      setNotes("");
-      setIdCard(null);
-      setIdPreview(null);
-    } catch (err) {
-      console.error("❌ Booking failed:", err.response?.data || err.message);
-      setMessage(
-        err.response?.data?.message || "❌ ቦኪንግ አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+      return (
+        <iframe
+          width="100%"
+          height="200"
+          loading="lazy"
+          src={`https://www.youtube.com/embed/${videoId}`}
+          title={video.title}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
       );
-    } finally {
-      setLoading(false);
+    } else if (video.platform === 'tiktok') {
+      return (
+        <blockquote
+          className="tiktok-embed"
+          cite={video.videoUrl}
+          style={{ width: '100%', height: 'auto' }}
+        >
+          <section>
+            <a target="_blank" rel="noopener noreferrer" href={video.videoUrl}>
+              በTikTok ይመልከቱ
+            </a>
+          </section>
+        </blockquote>
+      );
     }
+    return null;
   };
 
   return (
-    <section className="booking-form-container">
-      <h2 className="section-title">የኪራይ ቦኪንግ ቅጽ</h2>
+    <section className="advertising-section">
+      <h2 className="section-title">የማስታወቂያ ቪዲዮዎች</h2>
 
       {message && <p className="form-message">{message}</p>}
 
-      <form onSubmit={handleSubmit} className="booking-form">
-        <div className="form-group">
-          <label>ሙሉ ስም</label>
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>ስልክ ቁጥር</label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>ኢሜይል</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>መነሻ ቀን</label>
-          <DatePicker
-            selected={startDate}
-            onChange={(date) => setStartDate(date)}
-            dateFormat="yyyy/MM/dd"
-            placeholderText="እባክዎ ቀን ይምረጡ"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>መጨረሻ ቀን</label>
-          <DatePicker
-            selected={endDate}
-            onChange={(date) => setEndDate(date)}
-            dateFormat="yyyy/MM/dd"
-            placeholderText="እባክዎ ቀን ይምረጡ"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>የመታወቂያ ፎቶ (አማራጭ)</label>
-          <input type="file" accept="image/*" onChange={handleFileChange} />
-          {idPreview && (
-            <div className="preview-container">
-              <img src={idPreview} alt="ID Preview" className="preview-image" />
+      <div className="video-grid">
+        {videos.length > 0 ? (
+          videos.map((video) => (
+            <div key={video._id || video.id} className="video-card">
+              <h4>{video.title}</h4>
+              {renderEmbed(video)}
             </div>
-          )}
-        </div>
+          ))
+        ) : (
+          <p className="no-videos">🚫 ምንም ቪዲዮ አልተገኘም</p>
+        )}
+      </div>
 
-        <div className="form-group">
-          <label>ተጨማሪ ማስታወሻ (አማራጭ)</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="ማንኛውም ልዩ ጥያቄ..."
-          />
-        </div>
-
-        <button type="submit" className="submit-btn" disabled={loading}>
-          {loading ? "በመላክ ላይ..." : "ቦኪንግ ላክ"}
+      {page < totalPages && (
+        <button
+          onClick={() => fetchVideos(page + 1)}
+          disabled={loading}
+          className="load-more-btn"
+        >
+          {loading ? 'በማስገባት...' : 'ተጨማሪ ቪዲዮዎች አስገባ'}
         </button>
-      </form>
+      )}
     </section>
   );
 };
 
-export default RentalBookingForm;
+export default AdvertisingSection;
