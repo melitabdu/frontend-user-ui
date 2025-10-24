@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
 import './LoginModal.css';
-import { useAuth } from '../context/AuthContext';
+import { loginUser, registerUser } from '../services/authService';
 
 const LoginModal = ({ onClose }) => {
   const [form, setForm] = useState({ name: '', phone: '', password: '' });
   const [isNew, setIsNew] = useState(true);
   const [loading, setLoading] = useState(false);
-  const { loginUser, registerUser } = useAuth();
-
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'phone' && (!/^[0-9]*$/.test(value) || value.length > 10)) return;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -29,15 +26,22 @@ const LoginModal = ({ onClose }) => {
       return;
     }
 
+    if (isNew && !form.name.trim()) {
+      alert('እባኮት ስም ያስገቡ');
+      return;
+    }
+
     try {
       setLoading(true);
+
       const userData = isNew
         ? await registerUser(form)
-        : await loginUser(form);
+        : await loginUser({ phone: form.phone, password: form.password });
 
-      console.log('✅ Token:', localStorage.getItem('token'));
+      if (userData.token) localStorage.setItem('token', userData.token);
+
       alert(`እንኳን ደህና መጡ ${userData.name || ''}`);
-      onClose(); // Close modal
+      onClose();
     } catch (err) {
       alert(err.message || 'አልተሳካም።');
     } finally {
@@ -87,9 +91,10 @@ const LoginModal = ({ onClose }) => {
             {loading ? 'እባክዎን ይጠብቁ...' : isNew ? 'ይመዝገቡ' : 'ግባ'}
           </button>
         </form>
-        <p style={{ marginTop: '1rem' }}>
+        <p style={{ marginTop: '1rem', textAlign: 'center' }}>
           {isNew ? 'አስቀድሞ ተመዝግበዋል?' : 'አዲስ ነኝ?'}{' '}
           <button
+            type="button"
             style={{
               border: 'none',
               background: 'none',
