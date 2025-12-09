@@ -1,24 +1,24 @@
 import { io } from "socket.io-client";
 
-// ✅ Automatically switch between local and deployed backend
 const SOCKET_URL =
   import.meta.env.MODE === "development"
-    ? "http://localhost:5000" // local backend during development
-    : "https://home-service-backend-3qy2.onrender.com"; // deployed backend
+    ? "http://localhost:5000"
+    : import.meta.env.VITE_API_BASE_URL;   // ⬅ auto-uses Railway URL
 
-// ✅ Create socket instance
 const socket = io(SOCKET_URL, {
-  transports: ["websocket"],
-  reconnectionAttempts: 5,
-  reconnectionDelay: 2000,
+  transports: ["websocket"],   // ⬅ NO POLLING IN PRODUCTION
+  withCredentials: true,
+  reconnection: true,
+  reconnectionAttempts: Infinity,  // ⬅ Stable auto-reconnect
+  reconnectionDelay: 500,          // ⬅ Faster reconnect
 });
 
 socket.on("connect", () => {
-  console.log("✅ Connected to socket server:", SOCKET_URL);
+  console.log("✅ Socket connected:", socket.id);
 });
 
 socket.on("disconnect", () => {
-  console.log("❌ Disconnected from socket server");
+  console.log("❌ Socket disconnected");
 });
 
 export default socket;
