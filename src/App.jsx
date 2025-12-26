@@ -12,6 +12,7 @@ import RentalsCategory from './pages/Rentals/RentalCatagories';
 import RentalBookingForm from './pages/Rentals/RentalBookingForm';
 import MyRentalBookings from './pages/Customer/RentalMyBookings';
 import LoginModal from './components/LoginModal';
+import PublicProvider from './pages/Providers/PublicProviders';
 
 import './App.css';
 
@@ -27,6 +28,9 @@ const App = () => {
       {showLogin && <LoginModal onClose={closeLogin} />}
       <main>
         <Routes>
+          {/* Public provider link */}
+          
+
           {/* Home Service */}
           <Route path="/" element={<CustomerHome />} />
           <Route path="/services" element={<ServiceCategories openLogin={openLogin} />} />
@@ -34,6 +38,7 @@ const App = () => {
           <Route path="/book/:providerId" element={<BookingForm />} />
           <Route path="/book/:id" element={<BookProvider />} />
           <Route path="/my-bookings" element={<MyBookings />} />
+<Route path="/p/:slug" element={<PublicProvider openLogin={openLogin} />} />
 
           {/* Rentals */}
           <Route path="/rentals" element={<RentalsHome />} />
