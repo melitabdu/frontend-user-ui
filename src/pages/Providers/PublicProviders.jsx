@@ -1,82 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from '../../context/AuthContext';
 import "./PublicProvider.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const PublicProvider = () => {
+const PublicProvider = ({ openLogin }) => {
   const { slug } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 🔹 Fetch provider by slug
   useEffect(() => {
     const fetchProvider = async () => {
       try {
         const res = await axios.get(`${API_BASE_URL}/p/${slug}`);
         setProvider(res.data);
-      } catch (err) {
+      } catch {
         setError("Provider not found");
       } finally {
         setLoading(false);
       }
     };
-
     fetchProvider();
   }, [slug]);
 
-  // 🔹 SEO: Page title & meta description
-  useEffect(() => {
-    if (provider) {
-      document.title = `${provider.name} | Home Service Provider`;
-
-      let meta = document.querySelector("meta[name='description']");
-      if (!meta) {
-        meta = document.createElement("meta");
-        meta.name = "description";
-        document.head.appendChild(meta);
-      }
-
-      meta.setAttribute(
-        "content",
-        provider.description || "Trusted home service provider"
-      );
+  const handleBookNow = () => {
+    if (!user) {
+      // 🔐 LOGIN ONLY HERE
+      openLogin(`/book/${provider._id}`);
+      return;
     }
-  }, [provider]);
 
-  if (loading) return <p>⏳ Loading provider...</p>;
+    navigate(`/book/${provider._id}`);
+  };
+
+  if (loading) return <p>⏳ Loading...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <div className="public-provider-page">
       <div className="provider-card">
         {provider.photo && (
-          <img
-            src={provider.photo}
-            alt={provider.name}
-            className="provider-photo"
-          />
+          <img src={provider.photo} alt={provider.name} />
         )}
 
         <h1>{provider.name}</h1>
-        <p className="category">{provider.serviceCategory}</p>
-        <p className="description">{provider.description}</p>
+        <p>{provider.serviceCategory}</p>
+        <p>{provider.description}</p>
 
         <p>
-          <strong>Price:</strong> {provider.priceEstimate} Birr / day
+          <strong>Price:</strong> {provider.priceEstimate} Birr
         </p>
 
-        <a href={`tel:${provider.phone}`} className="call-btn">
-          📞 Call Provider
-        </a>
-
-        <button
-          className="book-btn"
-          onClick={() => alert("Booking coming next 🚀")}
-        >
+        <button className="book-btn" onClick={handleBookNow}>
           📅 Book Now
         </button>
       </div>
