@@ -1,26 +1,25 @@
-// src/pages/PublicProvider.jsx
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios'
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import "./PublicProvider.css";
 
-const PublicProvider = ({ openLogin }) => {
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+const PublicProvider = () => {
   const { slug } = useParams();
-  const navigate = useNavigate();
+
   const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-  });
-
+  // 🔹 Fetch provider by slug
   useEffect(() => {
     const fetchProvider = async () => {
       try {
-        const res = await api.get(`/api/providers/slug/${slug}`);
+        const res = await axios.get(`${API_BASE_URL}/p/${slug}`);
         setProvider(res.data);
       } catch (err) {
-        console.error(err);
-        setProvider(null);
+        setError("Provider not found");
       } finally {
         setLoading(false);
       }
@@ -29,35 +28,58 @@ const PublicProvider = ({ openLogin }) => {
     fetchProvider();
   }, [slug]);
 
-  const handleBookNow = () => {
-    const token = localStorage.getItem('userToken');
+  // 🔹 SEO: Page title & meta description
+  useEffect(() => {
+    if (provider) {
+      document.title = `${provider.name} | Home Service Provider`;
 
-    if (!token) {
-      if (openLogin) openLogin();
-      return;
+      let meta = document.querySelector("meta[name='description']");
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.name = "description";
+        document.head.appendChild(meta);
+      }
+
+      meta.setAttribute(
+        "content",
+        provider.description || "Trusted home service provider"
+      );
     }
+  }, [provider]);
 
-    navigate(`/book/${provider._id}`);
-  };
-
-  if (loading) return <p>Loading...</p>;
-  if (!provider) return <p>Provider not found</p>;
+  if (loading) return <p>⏳ Loading provider...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
-    <div className="public-provider">
-      <img
-        src={provider.photo || 'https://via.placeholder.com/200'}
-        alt={provider.name}
-      />
+    <div className="public-provider-page">
+      <div className="provider-card">
+        {provider.photo && (
+          <img
+            src={provider.photo}
+            alt={provider.name}
+            className="provider-photo"
+          />
+        )}
 
-      <h2>{provider.name}</h2>
-      <p><strong>Service:</strong> {provider.serviceCategory}</p>
-      <p><strong>Price:</strong> {provider.priceEstimate} ETB / day</p>
-      <p>{provider.description}</p>
+        <h1>{provider.name}</h1>
+        <p className="category">{provider.serviceCategory}</p>
+        <p className="description">{provider.description}</p>
 
-      <button onClick={handleBookNow} className="btn-booknow">
-        Book Now
-      </button>
+        <p>
+          <strong>Price:</strong> {provider.priceEstimate} Birr / day
+        </p>
+
+        <a href={`tel:${provider.phone}`} className="call-btn">
+          📞 Call Provider
+        </a>
+
+        <button
+          className="book-btn"
+          onClick={() => alert("Booking coming next 🚀")}
+        >
+          📅 Book Now
+        </button>
+      </div>
     </div>
   );
 };

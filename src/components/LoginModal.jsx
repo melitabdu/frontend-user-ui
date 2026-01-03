@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import './LoginModal.css';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-const LoginModal = ({ onClose }) => {
+const LoginModal = ({ onClose, onSuccess }) => {
   const { loginUser, registerUser } = useAuth();
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({ name: '', phone: '', password: '' });
   const [isNew, setIsNew] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -11,12 +14,14 @@ const LoginModal = ({ onClose }) => {
   // ✅ Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     // Only allow numbers for phone & max length 10
     if (name === 'phone' && (!/^[0-9]*$/.test(value) || value.length > 10)) return;
+
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle form submission
+  // ✅ Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -38,9 +43,14 @@ const LoginModal = ({ onClose }) => {
         : await loginUser(form);
 
       console.log('✅ User logged in:', userData);
-      alert(`እንኳን ደህና መጡ ${userData.name || ''}`);
 
-      onClose(); // Close the modal
+      // ✅ Close modal
+      onClose();
+
+      // ✅ Continue the flow if callback exists
+      if (onSuccess) {
+        onSuccess();
+      }
 
     } catch (err) {
       alert(err.message || 'አልተሳካም።');
@@ -53,7 +63,9 @@ const LoginModal = ({ onClose }) => {
     <div className="overlay">
       <div className="modal">
         <button className="close-btn" onClick={onClose}>✕</button>
+
         <h3>{isNew ? 'መመዝገብ' : 'ግባ'}</h3>
+
         <form onSubmit={handleSubmit}>
           {isNew && (
             <>
@@ -68,6 +80,7 @@ const LoginModal = ({ onClose }) => {
               />
             </>
           )}
+
           <label>ስልክ ቁጥር:</label>
           <input
             type="tel"
@@ -78,6 +91,7 @@ const LoginModal = ({ onClose }) => {
             maxLength={10}
             required
           />
+
           <label>የይለፍ ቃል:</label>
           <input
             type="password"
@@ -87,10 +101,12 @@ const LoginModal = ({ onClose }) => {
             onChange={handleChange}
             required
           />
+
           <button type="submit" className="submit-btn" disabled={loading}>
             {loading ? 'እባክዎን ይጠብቁ...' : isNew ? 'ይመዝገቡ' : 'ግባ'}
           </button>
         </form>
+
         <p style={{ marginTop: '1rem' }}>
           {isNew ? 'አስቀድሞ ተመዝግበዋል?' : 'አዲስ ነኝ?'}{' '}
           <button

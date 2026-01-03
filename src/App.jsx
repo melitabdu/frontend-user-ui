@@ -5,46 +5,57 @@ import CustomerHome from './pages/Customer/Home';
 import ServiceCategories from './pages/Customer/ServiceCategories';
 import ServiceProviders from './pages/Customer/ServiceProviders';
 import BookingForm from './pages/Customer/BookingForm';
-import BookProvider from './pages/Customer/BookProvider';
 import MyBookings from './pages/Customer/MyBookings';
-import RentalsHome from './pages/Rentals/RentalsHome';
-import RentalsCategory from './pages/Rentals/RentalCatagories';
-import RentalBookingForm from './pages/Rentals/RentalBookingForm';
-import MyRentalBookings from './pages/Customer/RentalMyBookings';
 import LoginModal from './components/LoginModal';
 import PublicProvider from './pages/Providers/PublicProviders';
 
 import './App.css';
 
 const App = () => {
-  const [showLogin, setShowLogin] = useState(false);
+  const [loginState, setLoginState] = useState({
+    show: false,
+    redirectTo: null,
+  });
 
-  const openLogin = () => setShowLogin(true);
-  const closeLogin = () => setShowLogin(false);
+  const openLogin = (redirectTo = null) => {
+    setLoginState({ show: true, redirectTo });
+  };
+
+  const closeLogin = () => {
+    setLoginState({ show: false, redirectTo: null });
+  };
 
   return (
     <div className="App">
       <Navbar />
-      {showLogin && <LoginModal onClose={closeLogin} />}
+
+      {loginState.show && (
+        <LoginModal
+          onClose={closeLogin}
+          redirectTo={loginState.redirectTo}
+        />
+      )}
+
       <main>
         <Routes>
-          {/* Public provider link */}
-          
-
-          {/* Home Service */}
+          {/* Home */}
           <Route path="/" element={<CustomerHome />} />
-          <Route path="/services" element={<ServiceCategories openLogin={openLogin} />} />
-          <Route path="/services/:category" element={<ServiceProviders />} />
-          <Route path="/book/:providerId" element={<BookingForm />} />
-          <Route path="/book/:id" element={<BookProvider />} />
-          <Route path="/my-bookings" element={<MyBookings />} />
-<Route path="/p/:slug" element={<PublicProvider openLogin={openLogin} />} />
 
-          {/* Rentals */}
-          <Route path="/rentals" element={<RentalsHome />} />
-          <Route path="/rentals/:categoryId" element={<RentalsCategory />} />
-          <Route path="/rental-booking/:id" element={<RentalBookingForm />} />
-          <Route path="/my-rental-bookings" element={<MyRentalBookings />} />
+          {/* Services */}
+          <Route path="/services" element={<ServiceCategories />} />
+          <Route path="/services/:category" element={<ServiceProviders />} />
+
+          {/* ✅ PUBLIC PROVIDER PAGE */}
+          <Route
+            path="/p/:slug"
+            element={<PublicProvider openLogin={openLogin} />}
+          />
+
+          {/* ✅ SINGLE BOOKING ROUTE */}
+          <Route path="/book/:providerId" element={<BookingForm />} />
+
+          {/* My bookings */}
+          <Route path="/my-bookings" element={<MyBookings />} />
         </Routes>
       </main>
     </div>
