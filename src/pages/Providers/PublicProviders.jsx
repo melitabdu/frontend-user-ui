@@ -18,14 +18,17 @@ const PublicProvider = ({ openLogin }) => {
   useEffect(() => {
     const fetchProvider = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/p/${slug}`);
+        // ✅ Correct API endpoint
+        const res = await axios.get(`${API_BASE_URL}/api/providers/slug/${slug}`);
         setProvider(res.data);
-      } catch {
+      } catch (err) {
+        console.error(err);
         setError("Provider not found");
       } finally {
         setLoading(false);
       }
     };
+
     fetchProvider();
   }, [slug]);
 
